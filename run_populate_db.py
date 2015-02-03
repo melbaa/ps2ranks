@@ -1,8 +1,11 @@
+import argparse
+import json
+
 import populate_db.populate_db
 
 def read_config(conf_path):
     with open(conf_path) as f:
-    config = json.loads(f.read())
+        config = json.loads(f.read())
     return config
 
 parser = argparse.ArgumentParser()

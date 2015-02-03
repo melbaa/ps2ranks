@@ -75,7 +75,7 @@ def setup_logging():
   use the property instead
 """
 class SqlConnectionCtx:
-  def __init__(self, user, password, host, database logger):
+  def __init__(self, user, password, host, database, logger):
     self.user, self.password, self.host, self.database = user, password, host, database
     self._ctx, self._cursor = mysql_connect(user, password, host, database)
     self.logger = logger
@@ -517,6 +517,8 @@ def main(conf):
   password = conf['password']
   host = conf['host']
   database = conf['database']
+  serviceid = conf['serviceid']
+  useragent = conf['useragent']
 
   ioloop = tornado.ioloop.IOLoop.instance()
 
@@ -524,7 +526,7 @@ def main(conf):
   conn_ctx = SqlConnectionCtx(user, password, host, database, logger)
 
 
-  populate_db = Populate_db(ioloop, logger, conn_ctx)
+  populate_db = Populate_db(ioloop, serviceid, useragent, logger, conn_ctx)
   cb = populate_db.select_update_tick
   ioloop.add_timeout(datetime.timedelta(seconds=1), cb)
 

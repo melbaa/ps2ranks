@@ -8,7 +8,7 @@ import mysql.connector
 import tornado.ioloop
 import requests
 
-import libs.glicko2 as glicko2
+import ps2ranks.libs.glicko2 as glicko2
 
 
 def mysql_connect(user, password, host, database):

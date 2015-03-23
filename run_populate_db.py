@@ -1,7 +1,7 @@
 import argparse
 import json
 
-import populate_db.populate_db
+import ps2ranks.populate_db.populate_db
 
 def read_config(conf_path):
     with open(conf_path) as f:
@@ -14,4 +14,4 @@ args = parser.parse_args()
 conf = read_config(args.CONFIGPATH)
 
 
-populate_db.populate_db.main(conf)
+ps2ranks.populate_db.populate_db.main(conf)

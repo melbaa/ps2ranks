@@ -44,6 +44,8 @@ docs/_build/
 # PyBuilder
 target/
 
-populate_db/populate_dbv*
+
 populate_db/secrets.json
 populate_db/d*
+secrets.json
+config.py

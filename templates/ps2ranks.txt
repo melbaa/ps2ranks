@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <meta name="google-site-verification" content="se3SMrw4Qj3zeWfohTDZhoJKpM-EZzaCj3I1xj9ygoI" />
+    
+    <link rel="shortcut icon" href="static/ico/favicon.png" />
+
+    <title>Planetside 2 Leaderboard: ${subtitle} edition</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="ps2ranks/static/css/bootstrap.min.css" rel="stylesheet" />
+    
+    <!-- Optional theme -->
+    <!--
+      <link rel="stylesheet" href="ps2ranks/static/css/bootstrap-theme.min.css" />
+    -->
+    
+    
+ 
+    
+    
+    <!-- universal analytics -->
+    <!--
+    <script type="text/javascript">
+    
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-47510048-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+    -->
+    
+  </head>
+
+  <body>
+  
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-KJ8RGT"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KJ8RGT');</script>
+<!-- End Google Tag Manager -->
+
+
+    <div class="container">
+      <ul class="nav nav-pills">
+        <li><a href="#search">Search</a></li>
+        <li><a href="#QA">Questions And Answers</a></li>
+        <li><a href="#thoughts">Analysis And Thoughts</a></li>
+        <li><a href="#top1k">Top Players</a></li>
+        <li><a href="#footer">Contact (bottom of the page)</a></li>
+      </ul>
+    </div>
+
+    <div class="jumbotron">
+      <div class="container">
+
+        <h1>Planetside 2 Leaderboard: </h1>
+        <h2>${subtitle} edition</h2>
+        The numbers are rating and rating deviation respectively.
+        <p />
+        A higher rating represents higher skill. Killing low rated
+        players over and over won't improve the rating for example. Killing
+        players of relatively equal or greater skill improves rating.
+        <p />        
+        The rating deviation, RD, together with the rating represent the interval
+        where the true skill of the player is. For example 
+        for a player with rating 1800 and RD of 100, we can be 95%
+        confident that his real strength is in the interval from 1600 to 2000.
+        <p />
+        We want RD to be small in order to be more specific, but at the same 
+        time we want it to be large enough, so that ratings converge fast to
+        values close to the true skill of the player.
+        <p />
+        Rank and rating are different. Rank is simply the number of players
+        that have a better rating than the player being ranked. 
+      </div>
+    </div>
+
+    
+    <div class="container">
+      
+      <%doc>
+      ##comments
+        <div class="alert alert-danger">
+          <h3> Sorry for the downtime, my host suspended my account for a while,
+          all should be fine now. 
+          </h2>
+      
+        
+        </div>
+      </%doc>
+      
+      </p>
+        
+      <form id="search" action="#search" method="get">
+        <div class="form-group">
+          <label for="search">Find player ratings, comma separated list, 
+            prefix search, not case sensitive. 
+          </label>
+          
+          <input placeholder="futuristicprostite, daddy" type="text" name="search" id="search" class="form-control" />
+        </div>
+       
+        <div class="form-group">
+          <label for="getrank">
+            Find player rank, one exact name, not case sensitive. 
+          </label>
+          <input placeholder="moushn" 
+            type="text" name="getrank" id="getrank" class="form-control"/> 
+        </div>
+        
+        <div class="form-group">
+          <label for="winpct">
+            Find the odds of two players fighting each other. Two exact names,
+            not case sensitive.
+          </label>
+          <input placeholder="lamian87, sauce" 
+            type="text" name="winpct" id="winpct" class="form-control"/> 
+        </div>
+        
+        <div class="form-group">
+          <label for="top">
+            Get top 1000 for a specific server or global. One exact server (world) name, not case sensitive.
+          </label>
+          <input placeholder="global"
+            type="text" name="top" id="top" class="form-control" />
+        </div>
+        
+        <input class="btn btn-default" type="submit" value="submit" />
+      </form>
+      <p />
+    </div>
+    
+    <div class="container">
+      <!-- Example row of columns -->
+      
+
+      
+      
+      %if len(search_args):
+          <h3>Search results for ratings of <b>${search_args}</b>:</h3>
+          %if len(ratings):
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nick</th>
+                  <th>Rating</th>
+                  <th>Rating Deviation</th>
+                </tr>
+              </thead>
+              <tbody>
+                %for i in range(len(ratings)):
+                  <tr>
+                  <td> ${ratings[i][0]} </td>
+                  <td> 
+                    <a
+                   href="https://www.planetside2.com/players/#!/search/${ratings[i][1]}">${ratings[i][1]}</a>
+                    [ <a href="http://stats.dasanfall.com/ps2/player/${ratings[i][1]}">DA</a> ]
+               
+                  </td>
+                  <td> ${ratings[i][2]}</td>
+                  <td> ${ratings[i][3]}</td>
+                  </tr>
+                %endfor
+                
+                
+              </tbody>
+            </table>
+          %endif      <!-- something found -->
+          %if len(ratings) == 0:
+            Nothing found.
+          %endif
+      %endif
+     
+      %if rankplayer is not None:
+        <h3>Search results for player rank of <b>${rankplayer}</b>:</h3>
+        ${rank_results}
+      %endif
+      
+      %if len(winpct_players):
+        <h3>Search results for player simulation of <b>${winpct_players}</b>:</h3>
+        ${winpct_results}
+      %endif
+      
+      
+      <h3 id="top1k">Active players ranked: ${num_players}. Average rating: ${avg_rating}. 
+        Last update ${last_db_update} seconds ago.
+      </h3>
+      
+      <h3>Global ratings distribution as of 20 oct 2013:</h3>
+      <div class="row">
+        <img src="ps2ranks/static/img/rating_dist1.png" alt="rating distribution" class="img-thumbnail col-lg-6" /> 
+        <img src="ps2ranks/static/img/rating_dist2.png" alt="rating distribution log scale" class="img-thumbnail col-lg-6" /> 
+      </div>
+      <h3>Global ratings distribution as of 04 feb 2015, 294k players. 
+      I've stretched a log scale graph to make it more readable. We see that
+      the distribution is normal, just like before:</h3>
+      <div class="row">
+        <img src="ps2ranks/static/img/rating_dist3.png" alt="rating distribution log scale" class="
+            col-lg-12 " />
+      </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <h2>Top 1000</h2>
+          %if len(ranklist) == 0:
+            no such server, try again
+          %else:
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nick</th>
+                  <th>Rating</th>
+                  <th>RD</th>
+                  <th>Battle Rank</th>
+                  <th>Faction</th>
+                  <th>World</th>
+                </tr>
+              </thead>
+              <tbody>
+                %for i in range(0, len(ranklist)):
+                  <tr>
+                  <td> ${ranklist[i][0]}</td>
+                  <td> 
+                    <a href="https://www.planetside2.com/players/#!/search/${ranklist[i][1]}">${ranklist[i][1]}</a>
+                    [ <a href="http://stats.dasanfall.com/ps2/player/${ranklist[i][1]}">DA</a> ]
+                  </td>
+                  <td> ${ranklist[i][2]} </td>
+                  <td> ${ranklist[i][3]} </td>
+                  <td> ${ranklist[i][4]} </td>
+                  <td> ${ranklist[i][5]} </td>
+                  <td> ${ranklist[i][6]} </td>
+                  </tr>
+                %endfor
+                
+                
+              </tbody>
+            </table>
+          %endif
+        </div> 
+      </div>
+      
+      <hr />
+      
+      <div id="QA">
+        <h2> Questions And Answers</h2>
+        
+        <h3>The list of top players is full of hackers and stat padders.
+        It should be easy to filter them, why don't you do it?</h3>
+          Every system can be gamed and I won't play internet police. I want you 
+          to realize that those players are a minority and their effect on the
+          overall rankings is insignificant. I'll add some details that should
+          make them stand out more (battle rank, minutes played). You are 
+          encouraged to report cheaters to Sony, because usually the means to 
+          cheat this leaderboard require you to break ingame rules and what
+          Sony calls "the spirit of the Game". Check out their 
+          <a href="https://www.planetside2.com/eula">EULA</a> and 
+          <a href="https://www.soe.com/termsofservice.vm">Terms of Service</a>.
+          Also get in contact with the ingame admins when they announce
+          their presence. 
+        
+        
+        <h3>Why make this leaderboard?</h3>
+          I've had it in mind ever since I started playing, which was as soon as 
+          the game had its official release. I took the chance to learn a few 
+          things and while I was sceptical at first, the results satisfy me, so
+          I decided to publish them. Please don't take any numbers too seriously,
+          there are many ways to play the game. Raising your rating by 100 
+          points probably isn't worth the pain you may have to endure.
+          
+        <h3>What about adding feature X?</h3>
+          I won't go into detail what will and won't be implemented, as it
+          may change at any time. If I add something interesting, I'll 
+          announce it in the planetside reddit - /r/planetside. 
+          
+        <h3>How can it be possible to accurately rank people against each 
+        other across servers? Seeing as they will never fight each other.
+         - ultimatox on reddit</h3>
+          While some players have multiple characters on different servers, 
+          the majority of the players will never meet. Many won't meet even 
+          when they play on the same server. We'll have to trust some factors 
+          that are out of our hands on this one. SOE is balancing the 
+          populations on the servers by rotating the recommended severs from 
+          time to time. This should in theory make the skill averages of the 
+          different servers the same. Another point is that players keep 
+          correcting their play style from feedback that comes from a variety 
+          of shared sources (reddit, forums, patch notes, ranklists), not 
+          just ingame. 
+          
+        <h3>Can you really evaluate player skill simply by kills? The top 
+        rated on your list will -always- be MAX/vehicle farmers. Or, for 
+        example, the guy who's currently ranked #2 who has over a third of 
+        his kills from AI mines. - Sattorin on reddit</h3>
+          Some play styles are more rewarding than others. The top players 
+          will use whatever gives them the most advantage. To compete with 
+          them you will have to challenge them directly (or players in the 
+          same rating range). How you do that is up to you. It can be with 
+          vehicles or a group of 3 friends with decimators. You could 
+          try to replicate their strategy if it seems so easy.
+
+        <h3>Is the only thing determining 
+        skill on this list a players ability to find and kill other players 
+        of higher skill on this list? How did you then initially determine 
+        rankings? Its a cool idea but seems rather arbitrary. - Phrygen on reddit</h3>
+          All kills award rating, but if your opponent's rating is low 
+          compared to yours (think for example 200 points difference) you 
+          will win a point or even just a fraction of a point. Your opponent 
+          won't lose much rating either, because as far as the model is 
+          concerned, everything worked out as expected. The better player 
+          won. If however the low ranked player wins, his prize will be much 
+          bigger and the penalty for the high ranked player will be much bigger.
+          
+        
+        <h3>How are you rating players?</h3>
+          I'm using the glicko-2 rating system, which is self correcting. 
+          New players start out with 
+          1500 rating and 100 rating deviation. The relatively high rating deviation 
+          allows them to move fast up or down the ladder for a while. Soon enough
+          they find a spot where they perform consistently and the deviation
+          starts to drop. 
+        
+         
+        
+        
+      </div>
+      
+      <hr />
+      
+      <div id="thoughts">
+        <h2> Analysis And Thoughts </h2>
+        
+        <h3> On Inflation </h3>
+        There is ratings inflation among the highest rated players. It was
+        expected, it's hard to rate accurately players that never lose. 
+        The model correctly places those players above everyone else, so I'm
+        still happy. Ratings can't grow indefinetely by killing a lower rated
+        player, so it's interesting to see where the roof is. 
+        
+        <h3> On Inactive Players </h3>
+        Inactive players can be dealt with in many ways, but all have 
+        disadvantages. Most implementations assign an inactive player a 
+        provisional status and he's excluded from ranklists. I decided to
+        delete them instead. It's easy to get your rating back, because as soon
+        you come back, you will get ranked again. There's no need to grind or
+        invest a lot of time, it's enough to win against some strong players.
+        This loses us historical
+        achievments, but they aren't too meaningful, because the game,
+        the player base and 
+        ratings are always moving. Comparing a current rating with one from 
+        the past will be nothing but misleading. 
+        
+        <h3> On Infantry Against Vehicles </h3>
+        I've never considered making separate lists for vehicle-only or 
+        knife-only players. I wanted to create an overview, a summary of the
+        playerbase, not an in-depth analysis. I expected the top players to be
+        vehicle-only, the game was designed that way. It seems this is slowly
+        changing in favor of infantry players. 
+        
+        <h3> On Interpretation Of The Data </h3>
+        A player can't be summarized by a few numbers, I'm not pretending
+        to have achieved such a thing. Use the data to help you make up your
+        mind about a player. A person is multidimensional, some are
+        better at aim, others at strategy and patience, 
+        others at teamplay, others at trashtalking and drama. Sadly the SOE
+        census doesn't show that much. Hopefully in the future teams (squads,
+        platoons, alliances of the people shooting eachother) will
+        appear in the census and someone will make yet another ranklist. 
+        Support players are not accurately represented at all. This includes
+        squad/platoon leaders, people that play for objectives (generators,
+        capturing bases), medics, drivers and pilots that give all shots to
+        their gunners, people with playstyles that generate them only assists.
+        Even if events from those players were available in the census, I
+        can't imagine incorporating them in a way that makes sense. It would be
+        easy to create separate leaderboards for support players, 
+        but that won't clarify
+        how they fit in the grand scheme of things. Maybe someone will find a
+        way. I hope I've set some foundation that will inspire others. 
+        
+        <h3> On Rating Medics </h3>
+        Note this isn't implemented, it's just a mental exercise. 
+        What does it mean to ressurect a player? Killing someone makes your
+        team stronger because there's one less opponent and because you gained
+        some XP. Ressurecting someone makes your team stronger because there's
+        one more ally and because you gained some XP. It doesn't take away the
+        XP from the killer. So at first glance
+        they are pretty much the same, at least for the guy doing the 
+        killng/ressurecting. Who to penalize and who to reward? I'd do it like this:
+        a player gets killed, which awards rating to the killer and penalizes
+        the guy that died. A medic comes and resurrects, this reverts the 
+        previous change in ratings and instead awards the medic and penalizes
+        the killer. The guy that died gets away with no rating loss, no XP. The medic
+        wins rating and XP, the killer loses rating and wins XP, he got outplayed
+        by a medic, because he gave away his position, lost ammo, lost grenades,
+        lost health and shields, lost potential. But what if the resurrected guy
+        gets killed again? Should the medic keep his rating reward? Probably not, 
+        they still get away with XP. 
+        
+        <h3> On Things That Oneshot Infantry, Past And Present </h3>
+        I love that, so I had to mention it. Never forget. 
+        Might be interesting to newer players.
+        TR version, but the rest are similar enough. 
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Weapon</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+              Tsar-42
+              </td>
+              <td>
+              cqc bolt sniper; headshot required
+              </td>
+            </tr>
+            <tr>
+              <td>
+              M77-B
+              </td>
+              <td>
+              bolt sniper; headshot required
+              </td>
+            </tr>
+            <tr>
+              <td>
+              SR-7
+              </td>
+              
+              <td>
+              bolt sniper; headshot required
+              </td>
+            </tr>
+            <tr>
+              <td>
+              RAMS 50
+              </td>
+              
+              <td>
+              bolt sniper; headshot required
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Nighthawk
+              </td>
+              
+              <td>
+              auto shotgun; headshot required
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Barrage
+              </td>
+              
+              <td>
+              shotgun; headshot required
+              </td>
+            </tr>
+             <tr>
+              <td>
+              Haymaker
+              </td>
+              
+              <td>
+              shotgun; headshot required
+              </td>
+            </tr>
+             <tr>
+              <td>
+              Uppercut
+              </td>
+              
+              <td>
+              shotgun
+              </td>
+            </tr>
+             <tr>
+              <td>
+              Blackjack
+              </td>
+              
+              <td>
+              shotgun
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Trac 5 S grenade
+              </td>
+              
+              <td>
+              carabine with grenade launcher; use engi for infinite grenades
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Pounder HEG (high explosive grenades)
+              </td>
+              
+              <td>
+              max weapon; both arms reqired; had 2 ammo on each hand with 
+              ok splash, fast reload and fast refire; 
+              some gifted people could use them to snipe from
+              hundred of meters away. it was viable, because they couldn't
+              be countersniped - nothing oneshots maxes
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              NC MAX
+              </td>
+              
+              <td>
+              honorary mention, because they have a special place in my heart. 
+              they are one of the 
+              biggest failures of the game. the Grinder, Hacksaw, Mattock and
+              Scattercannon were used by biolab residents 24/7 in a point and
+              click adventure; shotguns; 6-8 ammo on each hand; ridiculous range for 
+              a shotgun; fast refire; wait for people at corners or charge into
+              rooms
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Anti Vehicle MANA Turret
+              </td>
+              
+              <td>
+              engineer ability; immobile; render distance range; mouse seeking
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Claymore
+              </td>
+              
+              <td>
+              anti infantry mine
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Tank Mine
+              </td>
+              
+              <td>
+              anti vehicle mine
+              </td>
+            </tr>
+            <tr>
+              <td>
+              ML-7
+              </td>
+              
+              <td>
+              dumb fire rocket launcher
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Grounder
+              </td>
+              
+              <td>
+              anti air lockon rocket launcher
+              </td>
+            </tr>
+            <tr>
+              <td>
+              SKEP Launcher
+              </td>
+              
+              <td>
+              anti vehicle lockon rocket launcher
+              </td>
+            </tr>
+            <tr>
+              <td>
+              NS Decimator
+              </td>
+              
+              <td>
+              dumb fire rocket launcher
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Prowler HEAT
+              </td>
+              
+              <td>
+              has 2 shots
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Prowler AP
+              </td>
+              
+              <td>
+              has 2 shots
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Prowler HE (high explosive)
+              </td>
+              
+              <td>
+              has 2 shots. used to have an insane blast radius, so even if you 
+              missed your shots, people died. was nice for spamming towers
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Prowler Halberd
+              </td>
+              
+              <td>
+              very little bullet drop
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Lightning HEAT
+              </td>
+              
+              <td>
+              
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Lightning AP
+              </td>
+              
+              <td>
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Lightning HE
+              </td>
+              
+              <td>
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Sunderer Bulldog Front
+              </td>
+              
+              <td>
+              6 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Sunderer Bulldog Rear
+              </td>
+              
+              <td>
+              6 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Sunderer Fury Front
+              </td>
+              
+              <td>
+              5 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Sunderer Fury Rear
+              </td>
+              
+              <td>
+              5 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Flash Fury
+              </td>
+              
+              <td>
+              5 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Flash Renegade
+              </td>
+              
+              <td>
+              shotgun; headshot required?
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Harasser Fury
+              </td>
+              
+              <td>
+              5 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Harasser Halberd
+              </td>
+              
+              <td>
+              very little bullet drop
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Galaxy Bulldog Left
+              </td>
+              
+              <td>
+              6 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Galaxy Bulldog Right
+              </td>
+              
+              <td>
+              6 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Liberator Tank Buster (nose)
+              </td>
+              
+              <td>
+              need to be close range and to hit with both bullets
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Liberator Bulldog (rear)
+              </td>
+              
+              <td>
+              6 ammo
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Liberator Zepher (belly)
+              </td>
+              
+              <td>
+              6 ammo; night vision had 500-700 range and the zepher had insane
+              splash and less bullet drop. you could fly over platoons 
+              and wipe them in a clip;
+              weapon of choice of the first br100s in the game
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Liberator Dalton (belly)
+              </td>
+              
+              <td>
+              had very little bullet drop
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Mosquito Rocket Pods
+              </td>
+              
+              <td>
+              1-2 direct hits, don't remember
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Ground Roadkills
+              </td>
+              
+              <td>
+              Prowler, Lightning, Flash, Harasser, Sunderer; great way to 
+              teamkill if wep. locked
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Aircraft Roadkills
+              </td>
+              
+              <td>
+              Mosquito, Liberator, Galaxy; great way to teamkill if wep. locked
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Falling Through Terrain
+              </td>
+              
+              <td>
+              bug; you could fall through the map pretty easily
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Sunderer Roof
+              </td>
+              
+              <td>
+              bug; jump on a sunderer and die
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Generator Explosion
+              </td>
+              
+              <td>
+              when overloaded by a friendly - teamkills; can get you wep. locked;
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Base Anti-Vehicle Turret Shot
+              </td>
+              
+              <td>
+              
+              </td>
+            </tr>
+            <tr>
+              <td>
+              Base Turret (any) Repair
+              </td>
+              
+              <td>
+              sit on a turret and watch yourself die when it pops up when 
+              someone finishes repairing it
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Base Turret (any?)
+              </td>
+              
+              <td>
+              stay near a turret when it turns - you die when it touches you 
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Aircraft Takeoff
+              </td>
+              
+              <td>
+              sit on top of a plane when it takes off - you die
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Liberator Vehicle Lock
+              </td>
+              
+              <td>
+              get 1-2 gunners, get in the sky, lock the vehicle, watch them fall
+              to their death; it can also happen if the vehicle is squad only
+              and they (or you) get kicked from the squad
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              C4
+              </td>
+              
+              <td>
+              explosive; used to work through shields; a favourite exploit of
+              many people that lived in biolabs; you can drop it from roofs
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Ground Debris
+              </td>
+              
+              <td>
+              you spawn at a sundy and you watch yourself die when it explodes
+              and some part of it crushes you
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Air Debris
+              </td>
+              
+              <td>
+              some elite pilot scores a kill and the remains of the victim
+              fall on your head
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Hand Grenade
+              </td>
+              
+              <td>
+              explosive; has a special place in my heart, because they used
+              to have an insane blast radius
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Sticky Grenade
+              </td>
+              
+              <td>
+              explosive
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Anti-Vehicle Grenade
+              </td>
+              
+              <td>
+              explosive
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              AMS Sunderer Spawn
+              </td>
+              
+              <td>
+              gifted drivers can park their sundy on the edge of a bridge 
+              or cliff. respawn and fall to your death
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              AMS Sunderer
+              </td>
+              
+              <td>
+              spawn or try to resupply from a sunderer when it slides a pixel
+              and roadkills you
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              Falling To Death
+              </td>
+              
+              <td>
+              this one is especially nice when you expect an elevator to be
+              there, but SOE forgot to add it. also happens when running
+              downhill
+              </td>
+            </tr>
+            
+            <tr>
+              <td>
+              
+              </td>
+              
+              <td>
+              
+              </td>
+            </tr>
+            
+            
+            <tr>
+              <td>
+              I forgot something?
+              </td>
+              
+              <td>
+              tell me.
+              </td>
+            </tr>
+            
+            
+            
+          </tbody>
+        </table>
+      </div>
+     
+      <hr />
+      <footer id="footer">
+        <span class="glyphicon glyphicon-star-empty"></span>
+        <a href="http://melbalabs.com">melbalabs.com</a>
+       
+        
+      </footer>
+    </div> <!-- /container -->
+    
+    
+    <script src="ps2ranks/static/js/jquery.js"></script>
+    <script src="ps2ranks/static/js/bootstrap.min.js"></script>
+    
+  </body>
+</html>

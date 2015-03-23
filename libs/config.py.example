@@ -1,0 +1,4 @@
+mysql_pass = '123'
+mysql_user = '123'
+mysql_db = '123'
+mysql_host = '123'

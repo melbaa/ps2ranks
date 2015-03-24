@@ -68,6 +68,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <h1>Planetside 2 Leaderboard: </h1>
         <h2>${subtitle} edition</h2>
+        <p />
         The numbers are rating and rating deviation respectively.
         <p />
         A higher rating represents higher skill. Killing low rated
@@ -202,14 +203,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       
       <h3>Global ratings distribution as of 20 oct 2013:</h3>
       <div class="row">
-        <img src="ps2ranks/static/img/rating_dist1.png" alt="rating distribution" class="img-thumbnail col-lg-6" /> 
-        <img src="ps2ranks/static/img/rating_dist2.png" alt="rating distribution log scale" class="img-thumbnail col-lg-6" /> 
+        <img src="/ps2ranks/static/img/rating_dist1.png" alt="rating distribution" class="img-thumbnail col-lg-6" /> 
+        <img src="/ps2ranks/static/img/rating_dist2.png" alt="rating distribution log scale" class="img-thumbnail col-lg-6" /> 
       </div>
       <h3>Global ratings distribution as of 04 feb 2015, 294k players. 
       I've stretched a log scale graph to make it more readable. We see that
       the distribution is normal, just like before:</h3>
       <div class="row">
-        <img src="ps2ranks/static/img/rating_dist3.png" alt="rating distribution log scale" class="
+        <img src="/ps2ranks/static/img/rating_dist3.png" alt="rating distribution log scale" class="
             col-lg-12 " />
       </div>
       <div class="row">
@@ -1035,8 +1036,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     </div> <!-- /container -->
     
     
-    <script src="ps2ranks/static/js/jquery.js"></script>
-    <script src="ps2ranks/static/js/bootstrap.min.js"></script>
+    <script src="/ps2ranks/static/js/jquery.js"></script>
+    <script src="/ps2ranks/static/js/bootstrap.min.js"></script>
     
   </body>
 </html>

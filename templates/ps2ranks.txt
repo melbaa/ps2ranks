@@ -13,11 +13,11 @@
     <title>Planetside 2 Leaderboard: ${subtitle} edition</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="ps2ranks/static/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="/ps2ranks/static/css/bootstrap.min.css" rel="stylesheet" />
     
     <!-- Optional theme -->
     <!--
-      <link rel="stylesheet" href="ps2ranks/static/css/bootstrap-theme.min.css" />
+      <link rel="stylesheet" href="/ps2ranks/static/css/bootstrap-theme.min.css" />
     -->
     
     

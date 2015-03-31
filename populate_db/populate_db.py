@@ -214,13 +214,31 @@ from chartbl
         cb = self.avg_player_rating_tick
         self.ioloop.add_timeout(datetime.timedelta(days=1), cb)
 
+"""
+the streaming api can give the killboard with something like
+{
+	"service":"event",
+	"action":"subscribe",
+	"characters":["all"],
+	"worlds":["all"],
+	"eventNames":["Death"]
+}
+but it doesn't allow resolving _id attributes and joins, so it doesn't look
+super useful atm. plus it would require a websocket client lib
+
+we want world_id resolved to a string, because they change servers and 
+their names
+
+BR, faction, world for a character can change all the time (eg. character
+deleted and recreated)
+"""
 
 class Populate_db:
 
     def __init__(self, ioloop, serviceid, useragent, logger, conn_ctx):
 
         self.requests_session = requests.Session()
-        self.soe_api_url = 'http://census.soe.com/' + \
+        self.soe_api_url = 'https://census.daybreakgames.com/' + \
             serviceid + '/get/ps2:v2/event'
         self.soe_api_params = {'type': 'KILL',
                                'c:limit': '1000',

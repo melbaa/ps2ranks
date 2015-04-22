@@ -59,7 +59,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <li><a href="#QA">Questions And Answers</a></li>
         <li><a href="#thoughts">Analysis And Thoughts</a></li>
         <li><a href="#top1k">Top Players</a></li>
-        <li><a href="#footer">Contact (bottom of the page)</a></li>
+        <li><a href="/contact">Contact</a></li>
       </ul>
     </div>
 

@@ -1,4 +1,7 @@
-Create Table: CREATE TABLE `chartbl` (
+create database ps2ranks;
+use ps2ranks;
+
+CREATE TABLE `chartbl` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `rating` double NOT NULL,
   `rd` double NOT NULL,
@@ -11,8 +14,9 @@ Create Table: CREATE TABLE `chartbl` (
   `br` bigint(10) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
-  KEY `rating` (`rating`)
-) ENGINE=InnoDB AUTO_INCREMENT=496726 DEFAULT CHARSET=ascii
+  KEY `rating` (`rating`),
+  KEY `world_rating` (`world`,`rating`)
+) ENGINE=InnoDB AUTO_INCREMENT=7069306 DEFAULT CHARSET=ascii
 
 
 CREATE TABLE `summarytbl` (

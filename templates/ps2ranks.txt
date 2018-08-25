@@ -55,11 +55,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
     <div class="container">
       <ul class="nav nav-pills">
+
+        <li><a href="/">Home</a></li>
         <li><a href="#search">Search</a></li>
         <li><a href="#QA">Questions And Answers</a></li>
         <li><a href="#thoughts">Analysis And Thoughts</a></li>
         <li><a href="#top1k">Top Players</a></li>
-        <li><a href="/contact">Contact</a></li>
       </ul>
     </div>
 

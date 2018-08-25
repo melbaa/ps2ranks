@@ -370,7 +370,7 @@ class Ps2ranks:
                 winpct_players=', '.join(winpct_players),
                 winpct_results=winpct_results)
         except mysql.connector.Error as err:
-            self._logger.error(str(err))
+            self._logger.exception(err)
             return 'An error occurred. Please try again later.'
         finally:
             self._mysql_ops.cleanup()

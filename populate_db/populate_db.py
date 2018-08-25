@@ -5,7 +5,7 @@ import logging
 import datetime
 from contextlib import closing
 
-import mysql.connector
+import pymysql
 import tornado.ioloop
 import requests
 from memory_profiler import profile
@@ -15,12 +15,12 @@ import ps2ranks.libs.glicko2 as glicko2
 
 
 def mysql_connect(user, password, host, database):
-    conn = mysql.connector.connect(
+    conn = pymysql.connect(
         user=user,
         password=password,
         host=host,
         database=database,
-        raise_on_warnings=True)
+    )
     return conn
 
 

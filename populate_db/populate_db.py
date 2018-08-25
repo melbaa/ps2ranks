@@ -3,23 +3,25 @@ import urllib.request
 import socket
 import logging
 import datetime
+from contextlib import closing
 
 import mysql.connector
 import tornado.ioloop
 import requests
+from memory_profiler import profile
 
 import ps2ranks.libs.glicko2 as glicko2
 
 
+
 def mysql_connect(user, password, host, database):
-    ctx = mysql.connector.connect(
+    conn = mysql.connector.connect(
         user=user,
         password=password,
         host=host,
         database=database,
         raise_on_warnings=True)
-    cursor = ctx.cursor()
-    return ctx, cursor
+    return conn
 
 
 def determine_sleep_time(num_events, time_to_sleep, TIME_TO_SLEEP_DEFAULT):
@@ -62,34 +64,36 @@ def setup_logging():
   use the property instead
 """
 
-
 class SqlConnectionCtx:
 
     def __init__(self, user, password, host, database, logger):
         self.user = user
         self.password, self.host, self.database = password, host, database
-        self._ctx, self._cursor = mysql_connect(user, password, host, database)
+        self._conn = mysql_connect(user, password, host, database)
         self.logger = logger
 
     @property
     def cursor(self):
-        return self._cursor
+        return self._conn.cursor()
+
+    @property
+    def connection(self):
+        return self._conn
 
     def commit(self):
         try:
-            self._ctx.commit()
+            self._conn.commit()
         except mysql.connector.Error as err:
             log_msg = "something went wrong: {}".format(str(err))
             self.logger.error(log_msg)
 
     def close(self):
-        self._cursor.close()
-        self._ctx.close()
+        self._conn.close()
 
     def reconnect(self):
         self.logger.debug('trying to reconnect')
         self.close()
-        self._ctx, self._cursor = mysql_connect(
+        self._conn = mysql_connect(
             self.user,
             self.password,
             self.host,
@@ -136,35 +140,37 @@ from chartbl
 limit 20
 """.format("{}", self.old_qry_predicate)
 
+
     def delete_tick(self):
         try:
 
-            self.conn_ctx.cursor.execute(self.max_lastseen_qry)
-            max_lastseen = self.conn_ctx.cursor.fetchone()[0]
+            with closing(self.conn_ctx.cursor) as cursor:
+                cursor.execute(self.max_lastseen_qry)
+                max_lastseen = cursor.fetchone()[0]
 
-            del_stmt = self.del_old_qry.format(max_lastseen)
+                del_stmt = self.del_old_qry.format(max_lastseen)
 
-            self.conn_ctx.cursor.execute(
-                self.count_old_qry.format(max_lastseen))
-            cnt_players = self.conn_ctx.cursor.fetchone()
+                cursor.execute(
+                    self.count_old_qry.format(max_lastseen))
+                cnt_players = cursor.fetchone()
 
-            log_msg = "{} players pending delete with the statement {}".format(
-                cnt_players,
-                del_stmt)
-            self.logger.debug(log_msg)
+                log_msg = "{} players pending delete with the statement {}".format(
+                    cnt_players,
+                    del_stmt)
+                self.logger.debug(log_msg)
 
-            self.conn_ctx.cursor.execute(self.select_old_qry.format(
-                max_lastseen,
-                max_lastseen))
-            rows = self.conn_ctx.cursor.fetchall()
-            for r in rows:
-                self.logger.debug(str(r))
+                cursor.execute(self.select_old_qry.format(
+                    max_lastseen,
+                    max_lastseen))
+                rows = cursor.fetchall()
+                for r in rows:
+                    self.logger.debug(str(r))
 
-            self.conn_ctx.cursor.execute(del_stmt)
+                cursor.execute(del_stmt)
 
-            log_msg = "deleted {} rows gg".format(
-                self.conn_ctx.cursor.rowcount)
-            self.logger.debug(log_msg)
+                log_msg = "deleted {} rows gg".format(
+                    cursor.rowcount)
+                self.logger.debug(log_msg)
 
         except mysql.connector.Error as err:
             log_msg = "something went wrong: {}".format(str(err))
@@ -196,16 +202,19 @@ select avg(rating)
 from chartbl
 """
 
+
     def avg_player_rating_tick(self):
 
         try:
-            self.conn_ctx.cursor.execute(self.find_avg_rating_qry)
-            avg = int(self.conn_ctx.cursor.fetchone()[0])
 
-            self.conn_ctx.cursor.execute(
-                self.insert_update_qry, (str(avg), str(avg)))
-            log_msg = 'in summarytbl, avg_rating={}'.format(avg)
-            self.logger.debug(log_msg)
+            with closing(self.conn_ctx.cursor) as cursor:
+                cursor.execute(self.find_avg_rating_qry)
+                avg = int(cursor.fetchone()[0])
+
+                cursor.execute(
+                    self.insert_update_qry, (str(avg), str(avg)))
+                log_msg = 'in summarytbl, avg_rating={}'.format(avg)
+                self.logger.debug(log_msg)
         except mysql.connector.Error as err:
             log_msg = "something went wrong: {}".format(str(err))
             self.logger.error(log_msg)
@@ -226,7 +235,7 @@ the streaming api can give the killboard with something like
 but it doesn't allow resolving _id attributes and joins, so it doesn't look
 super useful atm. plus it would require a websocket client lib
 
-we want world_id resolved to a string, because they change servers and 
+we want world_id resolved to a string, because they change servers and
 their names
 
 BR, faction, world for a character can change all the time (eg. character
@@ -312,6 +321,8 @@ on duplicate key update value=%s
         self.conn_ctx = conn_ctx
         self.db_error = False
 
+
+
     def select_update_tick(self):
 
         try:
@@ -331,8 +342,9 @@ on duplicate key update value=%s
                 self.TIME_TO_SLEEP_DEFAULT)
 
             curr_time = int(time.time())
-            self.conn_ctx.cursor.execute(
-                self.last_update_qry, (curr_time, curr_time))
+
+            with closing(self.conn_ctx.cursor) as cursor:
+                cursor.execute(self.last_update_qry, (curr_time, curr_time))
 
             msg = 'saw {} events, sleeping for {} sec, {} frags per sec'.format(
                 num_events,
@@ -359,36 +371,37 @@ on duplicate key update value=%s
             datetime.timedelta(seconds=self.time_to_sleep), cb)
 
     def find_nick_or_default(self, nick):
+        with closing(self.conn_ctx.cursor) as cursor:
 
-        self.conn_ctx.cursor.execute(self.select_qry, (nick,))
-        # print(self.conn_ctx.cursor.statement)
+            cursor.execute(self.select_qry, (nick,))
+            # print(cursor.statement)
 
-        result = self.conn_ctx.cursor.fetchone()
+            result = cursor.fetchone()
 
-        # self.logger.debug('old stats for {}: {}'.format(nick, result))
-        rating, rd = 0, 0
-        if result is None:
-            # insert defaults
-            try:
-                self.conn_ctx.cursor.execute(
-                    self.insert_qry,
-                    (self.default_rating,
-                        self.default_rd,
-                        self.default_volatility,
-                        0,
-                        '',
-                        nick,
-                        '',
-                        '',
-                        0))
-                # self.logger.debug('adding new player with qry ' + self.conn_ctx.cursor.statement)
-            except mysql.connector.errors.IntegrityError as e:
-                self.logger.error(e, 'wtf integrity Error because of insert')
-            rating, rd, sigma = float(self.default_rating), float(
-                self.default_rd), float(self.default_volatility)
-        else:
-            rating, rd, sigma = float(result[0]), float(
-                result[1]), float(result[2])
+            # self.logger.debug('old stats for {}: {}'.format(nick, result))
+            rating, rd = 0, 0
+            if result is None:
+                # insert defaults
+                try:
+                    cursor.execute(
+                        self.insert_qry,
+                        (self.default_rating,
+                            self.default_rd,
+                            self.default_volatility,
+                            0,
+                            '',
+                            nick,
+                            '',
+                            '',
+                            0))
+                    # self.logger.debug('adding new player with qry ' + cursor.statement)
+                except mysql.connector.errors.IntegrityError as e:
+                    self.logger.error(e, 'wtf integrity Error because of insert')
+                rating, rd, sigma = float(self.default_rating), float(
+                    self.default_rd), float(self.default_volatility)
+            else:
+                rating, rd, sigma = float(result[0]), float(
+                    result[1]), float(result[2])
 
         # we want to keep rd high enough, so changes happen fast enough
         if rd < self.min_rd:
@@ -421,6 +434,7 @@ on duplicate key update value=%s
 
         return json_reply
 
+    #@profile(precision=6)
     def update_glicko_ratings(self, json_reply, old_timestamp):
         num_events = 0
         timestamp = old_timestamp
@@ -455,7 +469,6 @@ on duplicate key update value=%s
                 # need the timestamp for after= argument when we request
                 # killboard
                 timestamp = 0
-                must_commit = False
                 for event in reversed(json_reply['event_list']):
                     # self.logger.debug(type(json_reply['event_list']))
 
@@ -509,29 +522,30 @@ on duplicate key update value=%s
                                 assert 0.01 < new_att.sigma < 1.2, 'wtf attacker volatility'
                                 assert 0.01 < new_lose.sigma < 1.2, 'wtf loser volatility'
 
-                                must_commit = True
-                                self.conn_ctx.cursor.execute(
-                                    self.update_qry,
-                                    (new_att.mu,
-                                        new_att.phi,
-                                        new_att.sigma,
-                                        newtimestamp,
-                                        world,
-                                        attacker_faction,
-                                        attacker_br,
-                                        attacker))
-                                # logger.info(cursor.statement)
-                                self.conn_ctx.cursor.execute(
-                                    self.update_qry,
-                                    (new_lose.mu,
-                                        new_lose.phi,
-                                        new_lose.sigma,
-                                        newtimestamp,
-                                        world,
-                                        loser_faction,
-                                        loser_br,
-                                        loser))
-                                # self.logger.debug('updating with stmt ' + self.conn_ctx.cursor.statement)
+                                with closing(self.conn_ctx.cursor) as cursor:
+
+                                    cursor.execute(
+                                        self.update_qry,
+                                        (new_att.mu,
+                                            new_att.phi,
+                                            new_att.sigma,
+                                            newtimestamp,
+                                            world,
+                                            attacker_faction,
+                                            attacker_br,
+                                            attacker))
+                                    # logger.info(cursor.statement)
+                                    cursor.execute(
+                                        self.update_qry,
+                                        (new_lose.mu,
+                                            new_lose.phi,
+                                            new_lose.sigma,
+                                            newtimestamp,
+                                            world,
+                                            loser_faction,
+                                            loser_br,
+                                            loser))
+                                # self.logger.debug('updating with stmt ' + cursor.statement)
                             except OverflowError as e:
                                 self.logger.error('{} attacker: {} {}; loser: {} {}; json: {}'.format(str(e), attacker, att_glicko_rat, loser, lose_glicko_rat, str(json_reply)))
                             except AssertionError as e:

@@ -83,7 +83,7 @@ class SqlConnectionCtx:
     def commit(self):
         try:
             self._conn.commit()
-        except mysql.connector.Error as err:
+        except pymysql.Error as err:
             log_msg = "something went wrong: {}".format(str(err))
             self.logger.error(log_msg)
 
@@ -172,7 +172,7 @@ limit 20
                     cursor.rowcount)
                 self.logger.debug(log_msg)
 
-        except mysql.connector.Error as err:
+        except pymysql.Error as err:
             log_msg = "something went wrong: {}".format(str(err))
             self.logger.error(log_msg)
         except Exception as e:
@@ -215,7 +215,7 @@ from chartbl
                     self.insert_update_qry, (str(avg), str(avg)))
                 log_msg = 'in summarytbl, avg_rating={}'.format(avg)
                 self.logger.debug(log_msg)
-        except mysql.connector.Error as err:
+        except pymysql.Error as err:
             log_msg = "something went wrong: {}".format(str(err))
             self.logger.error(log_msg)
 
@@ -355,14 +355,9 @@ on duplicate key update value=%s
             self.logger.error('wtf urlerror' + str(e))
         except socket.error as e:  # eg no internet or after hibernate
             self.logger.error('wtf socket.error: ' + str(e))
-        except mysql.connector.errors.InterfaceError as e:
-            # broken connection to mysql
-            self.logger.error('wtf InterfaceError error: ' + str(e))
-        except mysql.connector.errors.DatabaseError as e:
-            self.logger.error('wtf DatabaseError error: ' + str(e))
+        except pymysql.Error as e:
+            self.logger.error('wtf Error : ' + str(e))
             self.db_error = True
-        except mysql.connector.errors.OperationalError as e:
-            self.logger.error('wtf operational error: ' + str(e))
         except Exception as e:
             self.logger.error("what's going on? " + str(e), exc_info=True)
 
@@ -395,7 +390,7 @@ on duplicate key update value=%s
                             '',
                             0))
                     # self.logger.debug('adding new player with qry ' + cursor.statement)
-                except mysql.connector.errors.IntegrityError as e:
+                except pymysql.Error as e:
                     self.logger.error(e, 'wtf integrity Error because of insert')
                 rating, rd, sigma = float(self.default_rating), float(
                     self.default_rd), float(self.default_volatility)

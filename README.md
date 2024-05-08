@@ -15,3 +15,5 @@ The frontend shows information about the leaderboard, such as active users,
 average rating, time since last update, a top 1000. It allows
 rating and rank searches both global and by server. It uses nginx, cherrypy,
 bootstap, mako, uwsgi, matplotlib.
+
+You can see how it used to look like in the two screenshots around the time it got decomissioned.

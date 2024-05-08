@@ -75,7 +75,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         A higher rating represents higher skill. Killing low rated
         players over and over won't improve the rating for example. Killing
         players of relatively equal or greater skill improves rating.
-        <p />        
+        <p />
         The rating deviation, RD, together with the rating represent the interval
         where the true skill of the player is. For example 
         for a player with rating 1800 and RD of 100, we can be 95%
@@ -93,16 +93,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     
     <div class="container">
       
-      <%doc>
-      ##comments
         <div class="alert alert-danger">
-          <h3> Sorry for the downtime, my host suspended my account for a while,
-          all should be fine now. 
-          </h2>
-      
-        
+          <h3>
+              This project has been running for more than 10 years (since 2013) and it's time to say goodbye :) The data is no longer updating.
+          </h3>
         </div>
-      </%doc>
+
       
       </p>
         
